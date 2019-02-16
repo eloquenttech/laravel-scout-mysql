@@ -31,8 +31,8 @@ After you've published the Laravel Scout package configuration add the following
 
 ...
     'mysql' => [
-        // set to true if your primary keys are UUIDs
-        'uuids' => false,
+        'mode' => env('SCOUT_MYSQL_MODE', 'FULLTEXT'), // or anything else to use LIKE where clauses
+        'uuids' => false, // set to true if your primary keys are UUIDs
     ],
 ...
 ```
@@ -83,10 +83,6 @@ You wil now be able to use Laravel scout as described in the [official documenta
 As mentioned before, we do not advise this to be used in production. We designed this implementation as a way to
 stub our [Elasticsearch driver](https://github.com/Eloquent-Technologies/laravel-scout-elastic) for use in
 environments where we do not have access to an elastic search instance.
-
-## TODO
-- Add the ability to use MySQLs full text search ability on the `index` field, ensuring that the ability to use this
-  with an SQLite database is not broken.
 
 ## License
 The MIT License (MIT).

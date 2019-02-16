@@ -24,7 +24,6 @@ class MySQLScoutEngine extends Engine
 
         $model = $models->first();
         $indexTable = $model->searchableAs();
-        /** @var Connection $connection */
         $connection = $model->getConnection();
 
         if (!$connection->getSchemaBuilder()->hasTable($indexTable)) {
@@ -51,6 +50,10 @@ class MySQLScoutEngine extends Engine
                     }
                 }
             });
+
+            if (config('scout.mysql.mode') === 'FULLTEXT') {
+                $connection->unprepared("ALTER TABLE $indexTable ADD FULLTEXT(`index`)");
+            }
         }
 
         $models->each(function ($model) use ($connection, $indexTable) {
@@ -187,10 +190,13 @@ class MySQLScoutEngine extends Engine
         $indexTable = $builder->model->searchableAs();
         $connection = $builder->model->getConnection();
 
-        /** @var \Illuminate\Database\Query\Builder $query */
-        $query = $connection->table($indexTable)
-            ->selectRaw($builder->model->getForeignKey() . ' as _id')
-            ->where('index', 'LIKE', '%' . $builder->query . '%');
+        $query = $connection->table($indexTable)->selectRaw($builder->model->getForeignKey() . ' as _id');
+
+        if (config('scout.mysql.mode') === 'FULLTEXT') {
+            $query->whereRaw('MATCH(`index`) AGAINST(?)', [$builder->query]);
+        } else {
+            $query->where('index', 'LIKE', '%' . $builder->query . '%');
+        }
 
         if ($sort = $this->sort($builder)) {
             foreach ($sort as $field => $direction) {
