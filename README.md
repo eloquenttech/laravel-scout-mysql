@@ -26,7 +26,7 @@ the elastic driver with the scout engine.
 After you've published the Laravel Scout package configuration add the following:
 ```php
     // config/scout.php
-    // Set your driver to elasticsearch
+    // Set your driver to mysql
     'driver' => env('SCOUT_DRIVER', 'mysql'),
 
 ...
