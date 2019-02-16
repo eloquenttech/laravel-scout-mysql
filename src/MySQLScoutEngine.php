@@ -59,9 +59,11 @@ class MySQLScoutEngine extends Engine
             $where = [$model->getForeignKey() => $model->getScoutKey()];
             $values = ['index' => json_encode($searchableParams)];
 
-            foreach ($model->searchableProperties() as $field => $property) {
-                if (in_array($property['type'], ['integer', 'date', 'boolean', 'keyword'])) {
-                    $values[$field] = $searchableParams[$field];
+            if (method_exists($model, 'searchableProperties')) {
+                foreach ($model->searchableProperties() as $field => $property) {
+                    if (in_array($property['type'], ['integer', 'date', 'boolean', 'keyword'])) {
+                        $values[$field] = $searchableParams[$field];
+                    }
                 }
             }
 
