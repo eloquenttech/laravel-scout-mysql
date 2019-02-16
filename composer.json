@@ -1,0 +1,24 @@
+{
+    "name": "eloquent/laravel-scout-mysql",
+    "description": "MySQL Driver for Laravel Scout",
+    "keywords": ["laravel", "scout", "elasticsearch", "elastic"],
+    "require": {
+        "php": ">=7.2.0",
+        "laravel/scout": "^6.0"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Eloquent\\MySQLScout\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Eloquent\\MySQLScout\\MySQLScoutProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
