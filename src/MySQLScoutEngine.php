@@ -2,7 +2,6 @@
 
 namespace Eloquent\MySQLScout;
 
-use Illuminate\Database\Connection;
 use Laravel\Scout\Builder;
 use Laravel\Scout\Engines\Engine;
 use Illuminate\Database\Schema\Blueprint;
@@ -115,54 +114,55 @@ class MySQLScoutEngine extends Engine
      */
     public function paginate(Builder $builder, $perPage, $page)
     {
-        $result = $this->performSearch($builder, [
+        return $this->performSearch($builder, [
             'filters' => $this->filters($builder),
             'from' => ($page * $perPage) - $perPage,
             'size' => $perPage,
         ]);
-
-       $result['nbPages'] = $result->count() / $perPage;
-
-        return $result;
     }
 
     /**
      * Pluck and return the primary keys of the given results.
      *
-     * @param  mixed  $results
+     * @param  mixed  $result
      * @return \Illuminate\Support\Collection
      */
-    public function mapIds($results)
+    public function mapIds($result)
     {
-        return $results->pluck('_id')->values();
+        return $result['hits']->pluck('_id')->values();
     }
 
     /**
      * Map the given results to instances of the given model.
      *
      * @param  \Laravel\Scout\Builder  $builder
-     * @param  mixed  $results
+     * @param  mixed  $result
      * @param  \Illuminate\Database\Eloquent\Model  $model
      * @return Collection
      */
-    public function map(Builder $builder, $results, $model)
+    public function map(Builder $builder, $result, $model)
     {
-        if ($results->count() === 0) {
+        if ($result['count'] === 0) {
             return collect([]);
         }
 
-        return $model->getScoutModelsByIds($builder, $results->pluck('_id')->toArray());
+        $ids = $result['hits']->pluck('_id');
+        $models = $model->getScoutModelsByIds($builder, $ids->toArray())->keyBy($model->getKeyName());
+
+        return $ids->map(function ($id) use ($models) {
+            return $models[$id] ?? null;
+        })->filter();
     }
 
     /**
      * Get the total count from a raw result returned by the engine.
      *
-     * @param  mixed  $results
+     * @param  mixed  $result
      * @return int
      */
-    public function getTotalCount($results)
+    public function getTotalCount($result)
     {
-        return $results->count();
+        return $result['count'];
     }
 
     /**
@@ -214,21 +214,20 @@ class MySQLScoutEngine extends Engine
             }
         }
 
+        $totalCount = $query->count();
+
         if (isset($options['from'])) {
             $query->skip($options['from']);
         }
 
         if ($options['size']) {
-            $query->limit($options['size']);
+            $query->take($options['size']);
         }
 
-        if ($options['filters']) {
-            foreach ($options['filters'] as $field => $value) {
-                $query->where($field, $value);
-            }
-        }
-
-        return $query->get();
+        return [
+            'count' => $totalCount,
+            'hits' => $query->get(),
+        ];
     }
 
     /**
