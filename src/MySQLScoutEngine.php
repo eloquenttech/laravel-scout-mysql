@@ -204,6 +204,16 @@ class MySQLScoutEngine extends Engine
             }
         }
 
+        if ($options['filters']) {
+            foreach ($options['filters'] as $field => $value) {
+                if (is_array($value)) {
+                    $query->where(...$value);
+                } else {
+                    $query->where($field, $value);
+                }
+            }
+        }
+
         if (isset($options['from'])) {
             $query->skip($options['from']);
         }
