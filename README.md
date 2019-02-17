@@ -62,7 +62,7 @@ define a `searchableProperties()` method on your searchable models. For example:
             'name' => ['type' => 'text'],
             'email' => ['type' => 'text'],
             'company' => ['type' => 'keyword'],
-            'dob' => ['type' => 'date'],
+            'dob' => ['type' => 'date', 'format' => 'yyyy-MM-dd'],
             'number_of_siblings' => ['type' => 'integer'],
             'married' => ['type' => 'boolean'],
         ];
@@ -78,6 +78,20 @@ thus allowing you to filter or sort results based on these fields.
 > new *searchable property* field you will also need to create a migration to add the field to the index table.
 
 You wil now be able to use Laravel scout as described in the [official documentation](https://laravel.com/docs/5.7/scout).
+
+### Additional where clause operators
+By default, laravel scout only allows you to use the basic `=` operator in where clauses on your scout queries. 
+However, this package extends on this by allowing you to use the following additional operators: `<, <=, >, >=`. 
+In order to use these operators you will need to manually edit the scout builders `wheres` property, for example:
+```php
+$builder = Customers::search('John');
+$builder->wheres[] = ['dob', '<', '2000-01-01'];
+$builder->wheres[] = ['dob', '>=', '1970-01-01'];
+```
+This query will fetch all customers named 'John' that were born between 1970 and 2000.
+
+> NOTE: When defining date ranges, you will need to ensure that the dates are provided in the same format
+> that has been defined for that field in the `searchableProperties()` method.
 
 ## Disclaimer
 As mentioned before, we do not advise this to be used in production. We designed this implementation as a way to
