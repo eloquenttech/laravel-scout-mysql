@@ -64,7 +64,9 @@ class MySQLScoutEngine extends Engine
             if (method_exists($model, 'searchableProperties')) {
                 foreach ($model->searchableProperties() as $field => $property) {
                     if (in_array($property['type'], ['integer', 'date', 'boolean', 'keyword'])) {
-                        $values[$field] = $searchableParams[$field];
+                        if (isset($searchableParams[$field]) && !empty($searchableParams[$field])) {
+                            $values[$field] = $searchableParams[$field] ?: null;
+                        }
                     }
                 }
             }
