@@ -192,12 +192,16 @@ class MySQLScoutEngine extends Engine
         $indexTable = $builder->model->searchableAs();
         $connection = $builder->model->getConnection();
 
-        $query = $connection->table($indexTable)->selectRaw($builder->model->getForeignKey() . ' as _id');
+        $query = $connection->table($indexTable)->selectRaw(
+            $builder->model->getForeignKey() . ' as _id, ' . $indexTable . '.*'
+        );
 
-        if (config('scout.mysql.mode') === 'FULLTEXT') {
-            $query->whereRaw('MATCH(`index`) AGAINST(?)', [$builder->query]);
-        } else {
-            $query->where('index', 'LIKE', '%' . $builder->query . '%');
+        if ($builder->query) {
+            if (config('scout.mysql.mode') === 'FULLTEXT') {
+                $query->whereRaw('MATCH(`index`) AGAINST(?)', [$builder->query]);
+            } else {
+                $query->where('index', 'LIKE', '%' . $builder->query . '%');
+            }
         }
 
         if ($sort = $this->sort($builder)) {
@@ -228,7 +232,11 @@ class MySQLScoutEngine extends Engine
 
         return [
             'count' => $totalCount,
-            'hits' => $query->get(),
+            'hits' => $query->get()->map(function ($hit) {
+                $data = json_decode($hit->index, true);
+                $data['_id'] = $hit->_id;
+                return $data;
+            }),
         ];
     }
 
