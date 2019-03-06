@@ -4,6 +4,7 @@ namespace Eloquent\MySQLScout;
 
 use Laravel\Scout\Builder;
 use Laravel\Scout\Engines\Engine;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -175,9 +176,7 @@ class MySQLScoutEngine extends Engine
      */
     public function flush($model)
     {
-        $model->chunk(250, function ($models) {
-            $this->delete($models);
-        });
+        Schema::dropIfExists($model->searchableAs());
     }
 
     /**
