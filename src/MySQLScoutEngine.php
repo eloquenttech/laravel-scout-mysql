@@ -39,7 +39,7 @@ class MySQLScoutEngine extends Engine
                 if (method_exists($model, 'searchableProperties')) {
                     foreach ($model->searchableProperties() as $field => $property) {
                         if ($property['type'] === 'integer') {
-                            $table->integer($field)->nullable()->index();
+                            $table->bigInteger($field)->nullable()->index();
                         } else if ($property['type'] === 'date') {
                             $table->dateTime($field)->nullable()->index();
                         } else if ($property['type'] === 'boolean') {
